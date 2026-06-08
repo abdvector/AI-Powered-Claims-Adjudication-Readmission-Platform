@@ -1,0 +1,10 @@
+streamlit
+pypdf
+python-dotenv
+google-genai
+supabase
+plotly
+pandas
+scikit-learn
+xgboost
+streamlit-pdf-viewer
