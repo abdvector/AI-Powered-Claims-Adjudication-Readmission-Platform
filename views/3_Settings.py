@@ -1,0 +1,105 @@
+import streamlit as st
+
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    border: 1px solid #dbeafe;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+">
+    <h1 style="margin: 0; font-family: 'Outfit', sans-serif; color: #0F172A; font-size: 2.2rem; font-weight: 700;">Settings</h1>
+    <p style="margin: 6px 0 0 0; color: #475569; font-size: 1.05rem;">Manage platform configurations and user preferences.</p>
+</div>
+""", unsafe_allow_html=True)
+st.markdown("---")
+
+st.header("Cross-Validation Configuration")
+st.markdown(
+    "<span style='color: gray; font-size: 0.9em;'>Configure the automated rules applied when adjudicating claims against the Policy Master Index.</span>", 
+    unsafe_allow_html=True
+)
+st.write("") # Spacer
+
+rules = [
+    {
+        "id": "policy_exists",
+        "name": "policy_number | policy_ref_umr",
+    },
+    {
+        "id": "identity_match",
+        "name": "insured_name | claimant_name | policy_insured",
+    },
+    {
+        "id": "financial_limits",
+        "name": "settlement_amount | paid_amount_100 | net_settlement_amount | claim_amount",
+    },
+    {
+        "id": "temporal_coverage",
+        "name": "date_of_loss | loss_date_from",
+    }
+]
+
+for rule in rules:
+    with st.container(border=True):
+        col_text, col_toggle = st.columns([5, 1])
+        with col_text:
+            st.markdown(f"`{rule['name']}`")
+        with col_toggle:
+            st.toggle("Active", value=True, disabled=True, key=f"toggle_{rule['id']}", label_visibility="collapsed")
+
+# Custom Attributes Management
+user_id = "default_global"
+
+if "custom_attributes" not in st.session_state:
+    st.session_state.custom_attributes = [
+        {"id": "custom_1_sdoh", "name": "social_determinants_of_health", "active": True},
+        {"id": "custom_2_charlson", "name": "charlson_comorbidity_index", "active": True}
+    ]
+
+attributes_to_keep = []
+
+for custom_attr in st.session_state.custom_attributes:
+    with st.container(border=True):
+        col_text, col_toggle, col_del = st.columns([6, 1, 1])
+        with col_text:
+            st.markdown(f"`{custom_attr['name']}`")
+        with col_toggle:
+            new_active = st.toggle("Active", value=custom_attr["active"], disabled=False, key=f"toggle_{custom_attr['id']}", label_visibility="collapsed")
+            if new_active != custom_attr["active"]:
+                custom_attr["active"] = new_active
+        with col_del:
+            if st.button("Delete", key=f"del_{custom_attr['id']}"):
+                continue
+                
+    attributes_to_keep.append(custom_attr)
+
+if len(attributes_to_keep) != len(st.session_state.custom_attributes):
+    st.session_state.custom_attributes = attributes_to_keep
+    st.rerun()
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+with st.expander("Add Custom Attribute", expanded=False):
+    with st.form("add_attribute_form", clear_on_submit=True):
+        new_attr_name = st.text_input("Exact JSON Attribute Name (e.g. `medical_history`)")
+        submit_btn = st.form_submit_button("Add Attribute")
+        
+        if submit_btn:
+            if new_attr_name.strip():
+                exists = any(attr["name"] == new_attr_name.strip() for attr in st.session_state.custom_attributes)
+                if not exists:
+                    new_id = f"custom_{len(st.session_state.custom_attributes) + 1}_{new_attr_name.strip().lower().replace(' ', '_')}"
+                    st.session_state.custom_attributes.append({
+                        "id": new_id,
+                        "name": new_attr_name.strip(),
+                        "active": True
+                    })
+                    st.rerun()
+                else:
+                    st.error("Attribute already exists.")
+
+st.markdown("---")
+st.header("General Configuration")
+st.write("Platform settings and automated adjudication rule thresholds.")
