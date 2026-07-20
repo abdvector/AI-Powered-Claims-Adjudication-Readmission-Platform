@@ -283,7 +283,7 @@ def check_data_level_duplicate(doc_num: str, entity_name: str) -> bool:
 # ==========================================
 # SUPABASE FILE STORAGE (Free Tier Object Storage)
 # ==========================================
-STORAGE_BUCKET_NAME = "clinical-documents"
+STORAGE_BUCKET_NAME = "clinical-docs"
 
 def ensure_storage_bucket():
     """Ensures the clinical-documents bucket exists in Supabase Storage."""
