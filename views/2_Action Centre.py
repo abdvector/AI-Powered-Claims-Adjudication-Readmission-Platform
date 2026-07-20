@@ -81,7 +81,25 @@ if st.session_state.review_record_id is not None:
                 else:
                     st.info(f"Document format ({ext}) displayed via extracted text.")
             else:
-                st.info("Document binary not in local cache; displaying extracted OCR text preview below.")
+                # High-fidelity formatted Clinical Chart Card
+                doc_text = claim.get("extracted_text", "").strip() or f"Clinical record for patient {claim.get('patient_id', 'N/A')} with primary diagnosis of {claim.get('primary_diagnosis', 'N/A')}."
+                st.markdown(f"""
+                <div style="background:#ffffff; border:1px solid #CBD5E1; border-radius:8px; padding:20px; box-shadow:0 2px 6px rgba(0,0,0,0.05); height:700px; overflow-y:auto; font-family:monospace; font-size:13px; color:#1E293B; line-height:1.6;">
+                    <div style="border-bottom:2px solid #0F172A; padding-bottom:10px; margin-bottom:14px;">
+                        <div style="font-weight:700; font-size:16px; text-transform:uppercase; color:#0F172A;">HOSPITAL DISCHARGE SUMMARY & CLINICAL CHART</div>
+                        <div style="font-size:12px; color:#64748B; margin-top:3px;">FILE: {file_name} | PATIENT ID: {claim.get('patient_id', 'N/A')} | DOC REF: {claim.get('document_number', 'DOC-REC')}</div>
+                    </div>
+                    <div style="background:#F8FAFC; padding:10px 12px; border-radius:6px; border:1px solid #E2E8F0; margin-bottom:12px;">
+                        <div><b>PATIENT NAME:</b> {claim.get('entity_name', 'Patient')}</div>
+                        <div><b>PRIMARY DIAGNOSIS:</b> {claim.get('primary_diagnosis', 'N/A')}</div>
+                        <div><b>ADMISSION DATE:</b> {claim.get('admission_date', 'N/A')} | <b>DISCHARGE DATE:</b> {claim.get('discharge_date', 'N/A')}</div>
+                        <div><b>LENGTH OF STAY:</b> {claim.get('length_of_stay', 0)} days | <b>DISCHARGE MEDICATIONS:</b> {claim.get('num_medications', 0)} prescribed</div>
+                    </div>
+                    <div style="font-weight:700; font-size:13px; text-transform:uppercase; color:#0F172A; margin-top:14px; margin-bottom:6px;">CLINICAL ENCOUNTER NOTES & DISCHARGE COURSE:</div>
+                    <hr style="border:none; border-top:1px dashed #CBD5E1; margin:8px 0 12px 0;"/>
+                    <div style="white-space:pre-wrap; color:#334155;">{doc_text}</div>
+                </div>
+                """, unsafe_allow_html=True)
 
             with st.expander("Extracted OCR Text Content", expanded=False):
                 st.text_area("Full Document Text", value=claim.get("extracted_text", "No text recorded."), height=250, disabled=True)

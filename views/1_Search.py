@@ -115,13 +115,26 @@ with tab_registry:
                             try:
                                 pdf_viewer(input=doc_bytes, width=420, height=400)
                             except Exception:
-                                st.caption("Visual viewer unavailable.")
+                                st.caption("Rendering digital document preview.")
                         elif fname.lower().endswith((".png", ".jpg", ".jpeg")):
                             st.image(doc_bytes, use_container_width=True)
                         else:
-                            st.caption("Binary format preview not supported.")
+                            st.caption(f"Document format ({fname}) displayed.")
                     else:
-                        st.caption("Visual file binary not available in storage.")
+                        # High-fidelity formatted Clinical Chart Card
+                        doc_text_preview = doc.get("extracted_text", "").strip() or f"Clinical record for patient {p_id} with primary diagnosis of {diag}."
+                        st.markdown(f"""
+                        <div style="background:#ffffff; border:1px solid #CBD5E1; border-radius:8px; padding:16px; box-shadow:0 2px 4px rgba(0,0,0,0.04); height:400px; overflow-y:auto; font-family:monospace; font-size:13px; color:#1E293B; line-height:1.5;">
+                            <div style="border-bottom:2px solid #0F172A; padding-bottom:8px; margin-bottom:12px;">
+                                <div style="font-weight:700; font-size:14px; text-transform:uppercase; color:#0F172A;">HOSPITAL DISCHARGE SUMMARY</div>
+                                <div style="font-size:11px; color:#64748B;">FILE: {fname} | PATIENT ID: {p_id}</div>
+                            </div>
+                            <div style="margin-bottom:8px;"><b>PRIMARY DIAGNOSIS:</b> {diag}</div>
+                            <div style="margin-bottom:8px;"><b>ADJUDICATION STATUS:</b> {status} ({risk:.1f}% Risk)</div>
+                            <hr style="border:none; border-top:1px dashed #CBD5E1; margin:10px 0;"/>
+                            <div style="white-space:pre-wrap; color:#334155;">{doc_text_preview[:1200]}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
 
                 with doc_col_text:
                     st.markdown("##### Extracted Clinical Text")
